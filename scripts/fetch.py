@@ -68,7 +68,9 @@ def game_of(title, ignore=()):
             g = re.sub(r"^(AC版|アーケード版)|(大会|タイムアタック)$", "", g).strip()
             if g:
                 return g
-    return None
+    # 「」のない題名（例：クイズミリオネア式 ドラクエ2完全初見実況プレイ3）
+    m = re.search(r"クイズミリオネア式\s*(.+?)(?:完全初見)?実況プレイ", title)
+    return m.group(1).strip() if m else None
 
 
 def set_games(videos, ignore):
