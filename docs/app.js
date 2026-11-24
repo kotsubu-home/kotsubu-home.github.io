@@ -168,14 +168,14 @@ function renderCalendar() {
     cnt += vs.length;
     for (const v of vs) if (v.status === "archive") { streams++; secs += v.dur || 0; }
     const xs = xByDay[k] || [];
-    const pips = xs.slice(0, 2).map((e) => `<span class="pip xp" style="--c:${XCOLOR}" title="${esc(e.title)}"></span>`).join("")
-      + vs.slice(0, 4 - Math.min(2, xs.length)).map((v) => `<span class="pip ${isStream(v) ? "" : "short"}" style="--c:${esc(chOf(v).color)}" title="${esc(v.title)}"></span>`).join("");
-    html += `<button class="cell ${k === today ? "today" : ""} ${k === S.calSel ? "sel" : ""}" data-day="${k}" aria-label="${m}月${d}日 ${vs.length + xs.length}件"><span class="d">${d}</span>${pips}</button>`;
+    const pips = xs.slice(0, 2).map((e) => `<span class="pip" style="--c:${XCOLOR}" title="${esc(e.title)}"></span>`).join("")
+      + vs.slice(0, 6 - Math.min(2, xs.length)).map((v) => `<span class="pip" style="--c:${esc(chOf(v).color)}" title="${esc(v.title)}"></span>`).join("");
+    html += `<button class="cell ${k === today ? "today" : ""} ${k === S.calSel ? "sel" : ""}" data-day="${k}" aria-label="${m}月${d}日 ${vs.length + xs.length}件"><span class="d">${d}</span><span class="pips">${pips}</span></button>`;
   }
   $("#cal-grid").innerHTML = html;
   $("#cal-summary").innerHTML = tile("この月の配信", streams, "回") + tile("配信時間", fmtHours(secs), "時間") + tile("動画・配信の合計", cnt, "本");
   $("#cal-legend").innerHTML = Object.values(S.channels).map((c) => `<span style="--c:${esc(c.color)}">${esc(c.label)}</span>`).join("")
-    + `<span style="--c:${XCOLOR}">告知（点線）</span><span style="--c:#8484a8">短い線＝動画・ショート</span>`;
+    + `<span style="--c:${XCOLOR}">イベント告知</span>`;
   const sel = S.calSel && (byDay[S.calSel] || []);
   const xsel = S.calSel && (xByDay[S.calSel] || []);
   $("#cal-day-title").textContent = S.calSel ? S.calSel.replace(/-0?/g, "/").replace(/^(\d+)\//, "$1年").replace(/\/(\d+)$/, "月$1日") : "日付をえらぶと、その日の配信が出ます";
