@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """YouTube Data API から配信・動画の情報を集めて docs/data に保存する（GitHub Actions が10分ごとに実行）"""
 import os, re, json, time, datetime as dt, urllib.request, urllib.parse, urllib.error
-import events
+import events, guests
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA = os.path.join(ROOT, "docs", "data")
@@ -78,11 +78,11 @@ def set_games(videos, ignore):
     """全部の動画のゲーム名を付け直す。ショートは煽り文句が多いので、裏付けのある名前だけ採用する"""
     known = set()
     for v in videos:
-        if v.get("status") != "short":
+        if v.get("status") != "short" and v.get("ch") != "other":
             v["game"] = game_of(v["title"], ignore)
             known.add(v["game"])
     for v in videos:
-        if v.get("status") == "short":
+        if v.get("status") == "short" or v.get("ch") == "other":
             g = game_of(v["title"], ignore)
             v["game"] = g if g and (g in known or "#" + g in v["title"]) else None
 
@@ -140,6 +140,16 @@ def main():
             state["backfilled"].append(h)
             print(f"{h}: 過去分を {pages} ページ読み込みました")
 
+    # 2.5) ほかのチャンネルへの出演（1日1回）
+    channels["other"] = {"label": "ほかのチャンネル", "color": "#3fae6a"}
+    if guests.due(state, now):
+        own = {c["id"] for c in channels.values() if c.get("id")}
+        gids, cands = guests.find(api, config, state, own, load("candidates.json", []), set(videos), now)
+        for vid in gids - set(videos):
+            check.add(vid)
+            videos[vid] = {"id": vid, "ch": "other"}
+        save("candidates.json", cands)
+
     # 3) 情報を更新する動画を決める（配信中・予定・最近のもの。1日1回は全部）
     today = dt.datetime.utcnow().strftime("%Y-%m-%d")
     if state.get("full_refresh") != today:
@@ -176,6 +186,8 @@ def main():
             rec = {**old, "title": sn["title"], "status": status, "start": start, "end": end, "dur": dur,
                    "views": int(st.get("viewCount", 0) or 0), "likes": int(st.get("likeCount", 0) or 0),
                    "comments": int(st.get("commentCount", 0) or 0)}
+            if rec.get("ch") == "other":
+                rec["chName"] = sn.get("channelTitle", "")
             # 同接（配信中だけ取れる）
             if status == "live" and ls.get("concurrentViewers"):
                 cv = int(ls["concurrentViewers"])
@@ -190,7 +202,7 @@ def main():
                 rec.pop("now", None)
             videos[vid] = rec
             posted = to_unix(sn.get("publishedAt")) or start
-            if status != "short" and posted and posted > now - 60 * 86400:
+            if status != "short" and rec.get("ch") != "other" and posted and posted > now - 60 * 86400:
                 label = channels.get(rec.get("ch"), {}).get("label", "")
                 found.append((vid, label, posted, events.extract(sn.get("description"), posted)))
     # 消された・非公開になった動画を外す

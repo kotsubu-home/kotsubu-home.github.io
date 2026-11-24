@@ -33,7 +33,7 @@ function fmtNum(n) {
 }
 const isStream = (v) => ["archive", "live", "upcoming"].includes(v.status);
 const ytUrl = (v) => `https://www.youtube.com/watch?v=${encodeURIComponent(v.id)}`;
-const chOf = (v) => S.channels[v.ch] || { label: v.ch, color: "#888" };
+const chOf = (v) => { const c = S.channels[v.ch] || { label: v.ch, color: "#888" }; return v.chName ? { ...c, label: v.chName } : c; };
 const XCOLOR = "#c08a00";
 const xDateUnix = (e) => Math.floor(new Date(`${e.date}T${e.time || "00:00"}:00+09:00`).getTime() / 1000);
 const todayKey = () => dayKey(Date.now() / 1000);

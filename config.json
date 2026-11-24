@@ -4,6 +4,18 @@
     { "handle": "@Kotsubu_retro", "label": "本人", "color": "#e64584", "filter": null },
     { "handle": "@mikado4649", "label": "ゲーセンミカド", "color": "#3d8fe0", "filter": "村下|小粒" }
   ],
+  "guest_channels": {
+    "UC9Lv9xJ-w4L2N3qs_12v2GA": "SUCCESS GAME MUSIC CHANNEL",
+    "UCr835lywfmaYiIBISaN-CCQ": "ドグチューブ",
+    "UCbKgKlWL-nvhl9ePWD6vFaQ": "ルパン小島",
+    "UCKzHRA2-IfT7PiqBeTpXtzA": "TOKYO WAVE FM",
+    "UCu2rt1mANz6IMw_pq4VahKw": "トカトントン"
+  },
+  "guest_videos": [
+    "uCLbrJzMmZQ", "Bgyd6hmmX5E", "JngVwRI5gFE", "RJWrSQkd3Vg", "Gh0osPeH9QA", "adP6J5GXxZY", "zBZozEi6CR8",
+    "xnQEGap35Ck", "Jky0PXODitc", "g-EXaXDA-go", "BHhLsvaGiw4", "HKQTWqxVzvY", "UqH8RJ1uKhg", "iLXy3ZEG8V8"
+  ],
+  "guest_exclude": ["ラティアン", "筐体ヶ原キバ子"],
   "not_games": [
     "20円!?", "検証", "初体験", "衝撃", "密着", "激ムズ", "発狂", "トラウマ", "パワハラ地獄", "理解したら負け",
     "ノーミス攻略", "3周クリア", "アケアカ", "レトロゲーム", "全員参戦", "パパ活", "ゲーム飯", "チーム職場vsライデンファイターズ"
