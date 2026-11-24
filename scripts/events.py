@@ -8,6 +8,7 @@ TIME = re.compile(r"(\d{1,2})\s*(?:時(?:(\d{1,2})分)?|:(\d{2}))")
 WEEK = re.compile(r"\s*(?:[(][^)]{1,6}[)]|[月火水木金土日]曜日?)?")
 SKIP = re.compile(r"発売|販売|ON ?SALE|募集", re.I)
 END = re.compile(r"お振込|ゲーセンミカド大会スケジュール|再生リスト")  # ここから下は毎回同じ案内
+VENUE = re.compile(r"(ベルサール\S*|\S*(会館|ホール|劇場|公園))")
 NOT_TITLE = re.compile(r"(会場|場所|日時|時間|出演|チケット|ゲスト)\s*[:▶]")
 
 
@@ -49,15 +50,17 @@ def _clean(s):
 def _title(candidates):
     for s in candidates:
         c = _clean(s)
-        if not c or NOT_TITLE.match(c):
+        if not c or NOT_TITLE.match(c) or VENUE.fullmatch(c):
             continue
         # 行ぜんたいがカッコなら、外側だけ外す
         m = re.match(r"[「『【](.+)[」』】]$", c)
         if m:
             c = m.group(1)
-        elif c[0] == "【" and "】" in c and len(c[1:c.index("】")]) >= 10:
-            c = c[1:c.index("】")]
-        return c[:50]
+        else:
+            m = re.match(r"【([^】]{10,})】|『([^』]{8,})』|「([^」]{8,})」", c)
+            if m:
+                c = m.group(1) or m.group(2) or m.group(3)
+        return re.sub(r"(開催中|開催します|に出演し?ます?)$", "", c)[:50]
     return None
 
 
@@ -65,6 +68,7 @@ def extract(description, posted_unix):
     """[(日付, 時刻 or None, 題名, 本文)] を返す"""
     posted = dt.datetime.fromtimestamp(posted_unix, JST).date()
     text = unicodedata.normalize("NFKC", description or "")
+    text = re.sub(r"(\d{1,2});(\d\d)(?!\d)", r"\1:\2", text)  # 「15;10」のような打ち間違い
     out = {}
     for block in re.split(r"\n\s*\n", text):
         if END.search(block):
@@ -87,7 +91,9 @@ def extract(description, posted_unix):
 
 def merge(old, found, today):
     """found: [(video_id, label, posted_unix, [予定...])]。同じ日・同じ題名は新しい動画の内容を使う"""
-    by = {(e["date"], e["title"]): e for e in old}
+    # 今回読み直した動画から拾ったものは入れ直す（書き直し・取り消しに合わせる）
+    again = {"https://www.youtube.com/watch?v=" + f[0] for f in found}
+    by = {(e["date"], e["title"]): e for e in old if e["url"] not in again}
     for vid, label, posted, evs in sorted(found, key=lambda x: x[2]):
         for d, hm, title, body in evs:
             prev = by.get((d, title))

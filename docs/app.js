@@ -120,6 +120,24 @@ function renderTimeline() {
   $("#tl-more").hidden = vs.length <= shown;
 }
 
+/* ---------- イベント ---------- */
+function eventsByDay(es) {
+  let html = "", last = "";
+  for (const e of es) {
+    if (e.date !== last) { html += `<div class="day-head">${fmtDay(xDateUnix({ date: e.date }))}</div>`; last = e.date; }
+    html += xcard(e);
+  }
+  return html || `<p class="empty">ありません</p>`;
+}
+function renderEvents() {
+  const src = S.evSrc || "all", today = todayKey();
+  const es = S.xev.filter((e) => src === "all" || (e.src === "yt" ? "yt" : "x") === src);
+  const cmp = (a, b) => xDateUnix(a) - xDateUnix(b);
+  $("#ev-next").innerHTML = eventsByDay(es.filter((e) => e.date >= today).sort(cmp));
+  $("#ev-past").innerHTML = eventsByDay(es.filter((e) => e.date < today)
+    .sort((a, b) => (a.date === b.date ? cmp(a, b) : a.date < b.date ? 1 : -1)));
+}
+
 /* ---------- カレンダー ---------- */
 function renderCalendar() {
   if (!S.cal) { const j = jst(Date.now() / 1000); S.cal = { y: j.y, m: j.m }; }
@@ -347,7 +365,7 @@ function renderNoncon() {
 }
 
 /* ---------- タブ ---------- */
-const RENDER = { timeline: renderTimeline, noncon: renderNoncon, calendar: renderCalendar, search: () => { renderGames(); renderSearch(); }, ranking: renderRanking, stats: renderStats };
+const RENDER = { timeline: renderTimeline, events: renderEvents, noncon: renderNoncon, calendar: renderCalendar, search: () => { renderGames(); renderSearch(); }, ranking: renderRanking, stats: renderStats };
 function showTab() {
   const t = (location.hash || "#timeline").slice(1);
   const tab = RENDER[t] ? t : "timeline";
@@ -378,6 +396,7 @@ document.addEventListener("DOMContentLoaded", () => {
   chipGroup("#tl-type", (v) => { S.tl.type = v; S.tl.shown = 60; renderTimeline(); });
   $("#tl-ch").addEventListener("change", (e) => { S.tl.ch = e.target.value; S.tl.shown = 60; renderTimeline(); });
   $("#tl-more").addEventListener("click", () => { S.tl.shown += 60; renderTimeline(); });
+  chipGroup("#ev-src", (v) => { S.evSrc = v; renderEvents(); });
   $("#cal-prev").addEventListener("click", () => { S.cal.m--; if (S.cal.m < 1) { S.cal.m = 12; S.cal.y--; } renderCalendar(); });
   $("#cal-next").addEventListener("click", () => { S.cal.m++; if (S.cal.m > 12) { S.cal.m = 1; S.cal.y++; } renderCalendar(); });
   $("#cal-grid").addEventListener("click", (e) => { const c = e.target.closest("[data-day]"); if (c) { S.calSel = c.dataset.day; renderCalendar(); } });

@@ -20,6 +20,7 @@
   </div>
   <nav class="tabs" aria-label="ページ切り替え">
     <a href="#timeline" data-tab="timeline">タイムライン</a>
+    <a href="#events" data-tab="events">イベント</a>
     <a href="#noncon" data-tab="noncon">ノーコンアイドル</a>
     <a href="#calendar" data-tab="calendar">カレンダー</a>
     <a href="#search" data-tab="search">さがす</a>
@@ -46,6 +47,22 @@
     </div>
     <div id="tl-list"></div>
     <button id="tl-more" class="more" hidden>もっと見る</button>
+  </section>
+
+  <!-- イベント -->
+  <section id="tab-events" class="tab" hidden>
+    <div class="filters">
+      <div class="chips" id="ev-src">
+        <button data-v="all" class="on">すべて</button>
+        <button data-v="yt">YouTube告知</button>
+        <button data-v="x">X告知</button>
+      </div>
+    </div>
+    <h3>これからのイベント</h3>
+    <div id="ev-next"></div>
+    <h3>これまでのイベント</h3>
+    <div id="ev-past"></div>
+    <p class="note">動画の概要欄やXの告知から自動で拾っています。中止・変更や、ご本人が出演しない告知がまざることがあります。お出かけの前に公式の発表をご確認ください。</p>
   </section>
 
   <!-- ノーコンアイドル -->
