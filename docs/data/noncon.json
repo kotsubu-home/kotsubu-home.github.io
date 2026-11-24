@@ -1,7 +1,13 @@
 {
   "_説明": "ノーコンアイドルの記録。games はゲームごとの結果、episodes は回ごとの到達点と名場面（時間, 説明）。自由に書き足してOK",
   "games": {
-    "スプラッターハウス": { "clear": false, "best": "", "note": "" }
+    "グラディウス": { "clear": true, "clearNo": 6, "best": "", "note": "1周クリア" },
+    "ファンタジーゾーン": { "clear": true, "clearNo": 9, "best": "", "note": "" },
+    "魔界村": { "clear": true, "clearNo": 17, "best": "", "note": "1周クリア" },
+    "沙羅曼蛇": { "clear": true, "clearNo": 20, "best": "", "note": "" },
+    "グラディウスII -GOFERの野望-": { "clear": true, "clearNo": 31, "best": "", "note": "" },
+    "奇々怪界": { "clear": true, "clearNo": 34, "best": "", "note": "" },
+    "スプラッターハウス": { "clear": true, "clearNo": 39, "best": "", "note": "" }
   },
   "episodes": {
     "35": {
