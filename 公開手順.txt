@@ -1,0 +1,57 @@
+こつぶホーム 公開の手順
+========================
+公開先：GitHub Pages（無料）　URL は https://kotsubu-home.github.io/ になります
+
+■ 1. YouTube の APIキーを作る（無料）
+  1) https://console.cloud.google.com/ を開いて Google アカウントでログイン
+  2) 上の「プロジェクトを選択」→「新しいプロジェクト」→ 名前「kotsubu-home」で作成
+  3) 左上メニュー →「APIとサービス」→「ライブラリ」→「YouTube Data API v3」を検索 →「有効にする」
+  4) 「APIとサービス」→「認証情報」→「認証情報を作成」→「APIキー」
+  5) できたキーの「キーを制限」→「APIの制限」で「YouTube Data API v3」だけにチェック → 保存
+  ※ キーは人に見せない・ファイルに書かない。次の手順で GitHub にだけ登録します。
+
+■ 2. GitHub にリポジトリを作る
+  1) https://github.com/new を開く
+  2) Owner：kotsubu-home（Organization）を選ぶ
+     Repository name：kotsubu-home.github.io　／　Public を選ぶ　／「Create repository」
+
+■ 3. ファイルを入れる（どちらか）
+  A) かんたん：claude.ai の「設定 → コネクタ」で GitHub をつなぐ → Claude に「アップして」と言う
+  B) 自分で：リポジトリの画面の「uploading an existing file」を押し、
+     このフォルダ（kotsubu-home）の中身を全部ドラッグ＆ドロップ →「Commit changes」
+     続けて「Add file」→「Create new file」を押し、
+       ファイル名の欄に  .github/workflows/update.yml  と入力
+       中身は workflow フォルダの update.yml をメモ帳で開いて、全部コピーして貼り付け →「Commit changes」
+     （これが10分ごとにデータを集める設定です。workflow フォルダ自体はアップしなくてOK）
+
+■ 4. APIキーを GitHub に登録
+  リポジトリの「Settings」→「Secrets and variables」→「Actions」→「New repository secret」
+    Name：YOUTUBE_API_KEY　　Secret：1で作ったキー　→「Add secret」
+
+■ 5. サイトを公開する
+  「Settings」→「Pages」→ Source：Deploy from a branch
+    Branch：main　フォルダ：/docs　→「Save」
+
+■ 6. 最初のデータを取る
+  「Actions」タブ →（緑のボタンが出たら有効にする）→ 左の「データ更新」→「Run workflow」
+  2〜3分で終わったら https://kotsubu-home.github.io/ を開いて確認
+  以後は10分ごとに自動で更新されます
+
+■ 変えたいとき
+  ・サイト名やチャンネル：config.json
+  ・独自ドメイン（例 kotsubu-home.com）：Settings → Pages → Custom domain に入れる
+
+■ 7. Xの予定も載せる（PCで動かす）
+  ※ GitHub に入れたあと、PC の kotsubu-home フォルダが GitHub とつながっている（git の）状態で使います
+     （Claude Code で公開した場合はそうなっています）
+  1) kotsubu-home フォルダ直下に「.gitignore」があることを確認（置いてあります）
+     （ログイン情報の入った profile フォルダを GitHub に上げないためのものです。消さないでください）
+  2) xwatch\setup_xwatch.bat をダブルクリック
+     → 開いたブラウザで X にログインして、ブラウザを閉じる
+     → 1回試しに取得して、PC起動時に自動で動くよう登録します
+  3) 以後、7:00〜22:00 の間、30〜39分ごと（ランダム）に
+     @Kotsubu__retro と @babamikado（村下・小粒が入った投稿だけ）を見て、
+     日付と「配信・出演・イベント」などの言葉が入った投稿を予定としてサイトに載せます
+  ・記録：xwatch\log.txt　　・止める：xwatch\stop_xwatch.bat
+  ・見られないときは xwatch_config.json の "headless": true を false にすると、
+    ブラウザの画面を出して見に行きます

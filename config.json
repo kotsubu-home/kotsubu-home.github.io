@@ -1,0 +1,7 @@
+{
+  "site_name": "こつぶホーム",
+  "channels": [
+    { "handle": "@Kotsubu_retro", "label": "本人", "color": "#e64584", "filter": null },
+    { "handle": "@mikado4649", "label": "ゲーセンミカド", "color": "#3d8fe0", "filter": "村下|小粒" }
+  ]
+}

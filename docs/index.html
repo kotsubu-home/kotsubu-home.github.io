@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>こつぶホーム - 村下小粒さん 非公式 視聴サポート</title>
+<meta name="description" content="レトロゲームアイドル村下小粒さんの配信・動画をまとめて見られる非公式ファンサイト">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js" defer></script>
+<script src="app.js" defer></script>
+</head>
+<body>
+<header class="top">
+  <div class="brand">
+    <h1 id="site-name">こつぶホーム</h1>
+    <p class="sub">レトロゲームアイドル 村下小粒さんの 非公式 視聴サポート</p>
+  </div>
+  <nav class="tabs" aria-label="ページ切り替え">
+    <a href="#timeline" data-tab="timeline">タイムライン</a>
+    <a href="#noncon" data-tab="noncon">ノーコンアイドル</a>
+    <a href="#calendar" data-tab="calendar">カレンダー</a>
+    <a href="#search" data-tab="search">さがす</a>
+    <a href="#ranking" data-tab="ranking">ランキング</a>
+    <a href="#stats" data-tab="stats">ぶんせき</a>
+  </nav>
+</header>
+
+<main>
+  <div id="loading" class="loading">ロード中<span class="blink">…</span></div>
+
+  <!-- タイムライン -->
+  <section id="tab-timeline" class="tab" hidden>
+    <div id="live-area"></div>
+    <div id="upcoming-area"></div>
+    <div class="filters">
+      <div class="chips" id="tl-type">
+        <button data-v="all" class="on">すべて</button>
+        <button data-v="stream">配信</button>
+        <button data-v="video">動画</button>
+        <button data-v="short">ショート</button>
+      </div>
+      <select id="tl-ch" aria-label="チャンネル"></select>
+    </div>
+    <div id="tl-list"></div>
+    <button id="tl-more" class="more" hidden>もっと見る</button>
+  </section>
+
+  <!-- ノーコンアイドル -->
+  <section id="tab-noncon" class="tab" hidden>
+    <div class="nc-hero">
+      <h2>ノーコンアイドル</h2>
+      <p>ゲーセンミカドのアーケード実機で、1コインクリアを目指して修行する番組（毎週水曜14時〜）</p>
+    </div>
+    <div id="nc-tiles" class="tiles"></div>
+    <div id="nc-now"></div>
+    <h3>ゲームごとの挑戦の記録</h3>
+    <div id="nc-games"></div>
+    <p class="note">到達面・クリアの記録と名場面は、ファンの手作業の記録です（data/noncon.json）。</p>
+  </section>
+
+  <!-- カレンダー -->
+  <section id="tab-calendar" class="tab" hidden>
+    <div class="cal-head">
+      <button id="cal-prev" aria-label="前の月">◀</button>
+      <h2 id="cal-title"></h2>
+      <button id="cal-next" aria-label="次の月">▶</button>
+    </div>
+    <div id="cal-summary" class="tiles"></div>
+    <div id="cal-grid" class="cal-grid"></div>
+    <div id="cal-legend" class="legend"></div>
+    <h3 id="cal-day-title"></h3>
+    <div id="cal-day-list"></div>
+  </section>
+
+  <!-- さがす -->
+  <section id="tab-search" class="tab" hidden>
+    <input id="q" type="search" placeholder="タイトル・ゲーム名でさがす（例：魔界村）" aria-label="さがす">
+    <h3>あそんだゲーム</h3>
+    <div id="games" class="chips wrap"></div>
+    <h3 id="q-count"></h3>
+    <div id="q-list"></div>
+  </section>
+
+  <!-- ランキング -->
+  <section id="tab-ranking" class="tab" hidden>
+    <div class="filters">
+      <div class="chips" id="rk-metric">
+        <button data-v="peak" class="on">最高同接</button>
+        <button data-v="views">再生数</button>
+        <button data-v="likes">いいね</button>
+        <button data-v="dur">配信時間</button>
+      </div>
+      <select id="rk-period" aria-label="期間">
+        <option value="all">全期間</option>
+        <option value="year">今年</option>
+        <option value="month">今月</option>
+        <option value="last">先月</option>
+      </select>
+      <select id="rk-type" aria-label="種類">
+        <option value="stream">配信だけ</option>
+        <option value="all">動画もふくむ</option>
+      </select>
+    </div>
+    <p class="note" id="rk-note"></p>
+    <ol id="rk-list" class="rank"></ol>
+  </section>
+
+  <!-- ぶんせき -->
+  <section id="tab-stats" class="tab" hidden>
+    <div id="st-tiles" class="tiles"></div>
+    <div class="card chart-card">
+      <h3>月ごとの配信時間</h3>
+      <div class="legend" id="st-legend"></div>
+      <div class="chart-box"><canvas id="ch-hours" role="img" aria-label="月ごとの配信時間のグラフ"></canvas></div>
+    </div>
+    <div class="card chart-card">
+      <h3>ゲームごとの配信時間（上位10）</h3>
+      <div class="chart-box tall"><canvas id="ch-games" role="img" aria-label="ゲームごとの配信時間のグラフ"></canvas></div>
+    </div>
+    <div class="card chart-card">
+      <h3>同接の移り変わり</h3>
+      <select id="st-stream" aria-label="配信をえらぶ"></select>
+      <div class="chart-box"><canvas id="ch-curve" role="img" aria-label="同時視聴者数の移り変わりのグラフ"></canvas></div>
+      <p class="note" id="st-curve-note"></p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <p>このサイトは<strong>非公式</strong>のファンサイトです。村下小粒さん・ゲーセンミカドさんとは関係ありません。動画・配信の権利は各権利者にあります。</p>
+  <p>データは YouTube Data API から自動で集めています。最終更新：<span id="updated">-</span></p>
+</footer>
+</body>
+</html>
