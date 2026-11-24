@@ -121,7 +121,7 @@ function renderTimeline() {
   if (game && !cnt[game]) cnt[game] = 0;
   const opts = Object.entries(cnt).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "ja"));
   const gs = $("#tl-game");
-  gs.innerHTML = `<option value="">すべてのゲーム</option>` + opts.map(([g, n]) => `<option value="${esc(g)}">${esc(g)}（${n}）</option>`).join("");
+  gs.innerHTML = `<option value="">全ゲーム</option>` + opts.map(([g, n]) => `<option value="${esc(g)}">${esc(g)}（${n}）</option>`).join("");
   gs.value = game;
   const vs = game ? base.filter((v) => v.game === game) : base;
   $("#tl-list").innerHTML = S.videos.length ? listByDay(vs.slice(0, shown))
@@ -272,7 +272,7 @@ function renderStats() {
       datasets: [{ label: "配信時間", data: top.map((x) => +fmtHours(x[1])), backgroundColor: "#e64584", borderRadius: 4, maxBarThickness: 22 }] },
     options: { indexAxis: "y", maintainAspectRatio: false,
       plugins: { tooltip: { callbacks: { label: (c) => ` ${c.parsed.x} 時間` } } },
-      scales: { x: { grid: { color: GRID }, border: { display: false }, title: { display: true, text: "時間" } }, y: { grid: { display: false } } } } });
+      scales: { x: { grid: { color: GRID }, border: { display: false }, title: { display: true, text: "時間" } }, y: { grid: { display: false }, ticks: { autoSkip: false, callback(v) { const t = this.getLabelForValue(v), n = innerWidth <= 600 ? 9 : 99; return t.length > n ? t.slice(0, n - 1) + "…" : t; } } } } } });
 
   // 同接の移り変わり
   const withCurve = S.videos.filter((v) => v.hasCurve);
@@ -397,7 +397,7 @@ async function load() {
   S.videos = dropStale(videos || []); S.mev = mev || []; S.xev = [...S.mev, ...(xev || []), ...(yev || [])]; if (nc) S.nc = nc; S.channels = channels || {}; S.meta = meta || {};
   if (S.meta.site_name) { $("#site-name").textContent = S.meta.site_name; document.title = `${S.meta.site_name} - 村下小粒さん 非公式 視聴サポート`; }
   $("#updated").textContent = S.meta.updated ? `${fmtDay(S.meta.updated)} ${fmtTime(S.meta.updated)}` : "まだ取得していません";
-  $("#tl-ch").innerHTML = `<option value="all">すべてのチャンネル</option>` + Object.entries(S.channels).map(([h, c]) => `<option value="${esc(h)}">${esc(c.label)}</option>`).join("");
+  $("#tl-ch").innerHTML = `<option value="all">全チャンネル</option>` + Object.entries(S.channels).map(([h, c]) => `<option value="${esc(h)}">${esc(c.label)}</option>`).join("");
   $("#loading").hidden = true;
   showTab();
 }
@@ -416,7 +416,7 @@ document.addEventListener("DOMContentLoaded", () => {
   $("#rk-period").addEventListener("change", (e) => { S.rk.period = e.target.value; renderRanking(); });
   $("#rk-type").addEventListener("change", (e) => { S.rk.type = e.target.value; renderRanking(); });
   $("#st-stream").addEventListener("change", (e) => drawCurve(e.target.value));
-  window.addEventListener("hashchange", showTab);
+  window.addEventListener("hashchange", () => { showTab(); window.scrollTo({ top: 0, behavior: "instant" }); });
   load();
   setInterval(async () => { // 5分ごとに最新データを読み直す
     const v = await fetch("data/videos.json", { cache: "no-store" }).then((r) => r.json()).catch(() => null);

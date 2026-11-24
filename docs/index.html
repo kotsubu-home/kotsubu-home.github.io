@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>こつぶホーム - 村下小粒さん 非公式 視聴サポート</title>
 <meta name="description" content="レトロゲームアイドル村下小粒さんの配信・動画をまとめて見られる非公式ファンサイト">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -16,16 +16,16 @@
 <header class="top">
   <div class="brand">
     <h1 id="site-name">こつぶホーム</h1>
-    <p class="sub">レトロゲームアイドル 村下小粒さんの 非公式 視聴サポート</p>
+    <p class="sub"><span class="lg">レトロゲームアイドル 村下小粒さんの 非公式 視聴サポート</span><span class="sm">村下小粒さん非公式</span></p>
   </div>
   <nav class="tabs" aria-label="ページ切り替え">
-    <a href="#timeline" data-tab="timeline">タイムライン</a>
-    <a href="#events" data-tab="events">イベント</a>
-    <a href="#noncon" data-tab="noncon">ノーコンアイドル</a>
-    <a href="#calendar" data-tab="calendar">カレンダー</a>
-    <a href="#search" data-tab="search">さがす</a>
-    <a href="#ranking" data-tab="ranking">ランキング</a>
-    <a href="#stats" data-tab="stats">ぶんせき</a>
+    <a href="#timeline" data-tab="timeline" aria-label="タイムライン"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H4zM9 20h6M10.5 8v5l4-2.5z"/></svg><span class="lg">タイムライン</span><span class="sm">新着</span></a>
+    <a href="#events" data-tab="events" aria-label="イベント"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h16v3a2 2 0 0 0 0 4v3H4v-3a2 2 0 0 0 0-4zM14 8v2M14 12v2M14 16v2"/></svg><span class="lg">イベント</span><span class="sm">イベント</span></a>
+    <a href="#noncon" data-tab="noncon" aria-label="ノーコンアイドル"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20v-4h16v4zM12 16V9M8 13h1"/><circle cx="12" cy="6" r="3"/></svg><span class="lg">ノーコンアイドル</span><span class="sm">ノーコン</span></a>
+    <a href="#calendar" data-tab="calendar" aria-label="カレンダー"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v14H4zM4 10h16M8 3v4M16 3v4M8 14h2M14 14h2"/></svg><span class="lg">カレンダー</span><span class="sm">カレンダー</span></a>
+    <a href="#search" data-tab="search" aria-label="さがす"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l5.5 5.5"/></svg><span class="lg">さがす</span><span class="sm">さがす</span></a>
+    <a href="#ranking" data-tab="ranking" aria-label="ランキング"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 20v-6h6v6zM9 20V6h6v14zM15 20v-9h6v9z"/></svg><span class="lg">ランキング</span><span class="sm">ランキング</span></a>
+    <a href="#stats" data-tab="stats" aria-label="ぶんせき"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4v16h16M8 15l4-5 3 3 5-7"/></svg><span class="lg">ぶんせき</span><span class="sm">ぶんせき</span></a>
   </nav>
 </header>
 
@@ -38,13 +38,13 @@
     <div id="upcoming-area"></div>
     <div class="filters">
       <div class="chips" id="tl-type">
-        <button data-v="all" class="on">すべて</button>
-        <button data-v="stream">配信</button>
-        <button data-v="video">動画</button>
-        <button data-v="short">ショート</button>
+        <button data-v="all" class="on"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z"/></svg>すべて</button>
+        <button data-v="stream"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="2.5"/><path d="M7.5 7.5a6.4 6.4 0 0 0 0 9M16.500 7.5a6.400 6.400 0 0 1 0 9M4.500 4.500a10.600 10.600 0 0 0 0 15M19.500 4.500a10.600 10.600 0 0 1 0 15"/></svg>配信</button>
+        <button data-v="video"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18v12H3zM10 9v6l5-3z"/></svg>動画</button>
+        <button data-v="short"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10v18H7zM10.500 9v6l4-3z"/></svg>ショート</button>
       </div>
-      <select id="tl-ch" aria-label="チャンネル"></select>
-      <select id="tl-game" aria-label="ゲームタイトル"></select>
+      <label class="pick"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-5h4a6 6 0 0 1 6 5v1"/></svg><select id="tl-ch" aria-label="チャンネル"></select></label>
+      <label class="pick"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h10a5 5 0 0 1 5 5v2a3 3 0 0 1-5.500 1.500L15.500 14h-7l-1 1.500A3 3 0 0 1 2 14v-2a5 5 0 0 1 5-5zM8 9v4M6 11h4M15 10h.1M17.500 12h.1"/></svg><select id="tl-game" aria-label="ゲームタイトル"></select></label>
     </div>
     <div id="tl-list"></div>
     <button id="tl-more" class="more" hidden>もっと見る</button>
@@ -54,9 +54,9 @@
   <section id="tab-events" class="tab" hidden>
     <div class="filters">
       <div class="chips" id="ev-src">
-        <button data-v="all" class="on">すべて</button>
-        <button data-v="yt">YouTube告知</button>
-        <button data-v="x">X告知</button>
+        <button data-v="all" class="on"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z"/></svg>すべて</button>
+        <button data-v="yt"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18v12H3zM10 9v6l5-3z"/></svg>YouTube告知</button>
+        <button data-v="x"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11h-9l-4 4v-4H4zM8 9h8M8 12h5"/></svg>X告知</button>
       </div>
     </div>
     <h3>これからのイベント</h3>
@@ -106,10 +106,10 @@
   <section id="tab-ranking" class="tab" hidden>
     <div class="filters">
       <div class="chips" id="rk-metric">
-        <button data-v="peak" class="on">最高同接</button>
-        <button data-v="views">再生数</button>
-        <button data-v="likes">いいね</button>
-        <button data-v="dur">配信時間</button>
+        <button data-v="peak" class="on"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.500"/><path d="M3 20v-2a5 5 0 0 1 5-4h2a5 5 0 0 1 5 4v2M15.500 5a3.500 3.500 0 0 1 0 6.500M18 14.500a5 5 0 0 1 3 4V20"/></svg>最高同接</button>
+        <button data-v="views"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18v12H3zM10 9v6l5-3z"/></svg>再生数</button>
+        <button data-v="likes"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20l-8-8a5 5 0 0 1 8-6 5 5 0 0 1 8 6z"/></svg>いいね</button>
+        <button data-v="dur"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.500"/><path d="M12 7v5l3.500 2"/></svg>配信時間</button>
       </div>
       <select id="rk-period" aria-label="期間">
         <option value="all">全期間</option>
