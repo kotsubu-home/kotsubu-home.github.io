@@ -3,6 +3,7 @@
 
 - guest_videos   … 出演を確かめた動画（必ず載せる）
 - guest_channels … 出演したことのあるチャンネル。新しい動画のうち、題名か「MC・ゲスト・出演」の欄に名前があるものを載せる
+- guest_title    … 概要欄に全番組の出演者を並べているチャンネル用。題名がこの形のものだけ載せる
 - それ以外のチャンネルは名前で検索し、載せずに docs/data/candidates.json へ候補として残す
   （本人について語るだけの動画や切り抜きが混ざるため）
 """
@@ -15,6 +16,11 @@ JST = dt.timezone(dt.timedelta(hours=9))
 
 def appears(title, desc):
     return bool(NAME.search(title or "") or CAST.search(desc or ""))
+
+
+def title_ok(cfg, channel, title):
+    pat = cfg.get("guest_title", {}).get(channel)
+    return not pat or bool(re.search(pat, title or ""))
 
 
 def due(state, now):
@@ -38,7 +44,7 @@ def find(api, cfg, state, own_ids, old_candidates, known_ids, now):
                     p["pageToken"] = token
                 r = api("playlistItems", **p)
                 for it in r.get("items", []):
-                    if appears(it["snippet"].get("title"), it["snippet"].get("description")):
+                    if title_ok(cfg, chans[cid], it["snippet"].get("title")) and appears(it["snippet"].get("title"), it["snippet"].get("description")):
                         ids.add(it["contentDetails"]["videoId"])
                 token, pages = r.get("nextPageToken"), pages + 1
                 if not token:
@@ -58,7 +64,8 @@ def find(api, cfg, state, own_ids, old_candidates, known_ids, now):
                 if not NAME.search(title) or sn["channelId"] in own_ids or sn["channelTitle"] in skip:
                     continue
                 if sn["channelId"] in chans:
-                    ids.add(vid)
+                    if title_ok(cfg, chans[sn["channelId"]], title):
+                        ids.add(vid)
                 else:
                     cands.setdefault(vid, {"id": vid, "title": title, "channel": sn["channelTitle"],
                                            "channelId": sn["channelId"], "date": sn["publishedAt"][:10]})

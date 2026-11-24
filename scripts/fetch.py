@@ -210,6 +210,8 @@ def main():
         videos.pop(vid, None)
 
     out = sorted((v for v in videos.values() if v.get("title")), key=lambda v: -(v.get("start") or 0))
+    out = [v for v in out if v.get("ch") != "other" or v["id"] in config.get("guest_videos", [])
+           or guests.title_ok(config, v.get("chName"), v["title"])]
     set_games(out, set(config.get("not_games", [])))
     save("videos.json", out)
     evs = events.merge(old_events or [], found, dt.datetime.now(events.JST).date())
