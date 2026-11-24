@@ -1,7 +1,7 @@
 /* こつぶホーム 画面の動き */
 "use strict";
 
-const S = { videos: [], xev: [], mev: [], nc: { games: {}, episodes: {} }, channels: {}, meta: {}, tl: { type: "all", ch: "all", shown: 60 },
+const S = { videos: [], xev: [], mev: [], nc: { games: {}, episodes: {} }, channels: {}, meta: {}, tl: { type: "all", ch: "all", game: "", shown: 60 },
   cal: null, calSel: null, rk: { metric: "peak", period: "all", type: "stream" }, charts: {} };
 
 const $ = (s, el = document) => el.querySelector(s);
@@ -111,10 +111,19 @@ function renderTimeline() {
   ].sort((a, b) => a.t - b.t);
   $("#upcoming-area").innerHTML = items.length ? `<h3>これからの予定</h3>` + items.map((x) => x.html).join("") : "";
 
-  const { type, ch, shown } = S.tl;
-  const vs = S.videos.filter((v) => v.status !== "upcoming" && v.status !== "live")
+  const { type, ch, game, shown } = S.tl;
+  const base = S.videos.filter((v) => v.status !== "upcoming" && v.status !== "live")
     .filter((v) => type === "all" || (type === "stream" ? v.status === "archive" : v.status === type))
     .filter((v) => ch === "all" || v.ch === ch);
+  // ゲームの選択肢（種類・チャンネルで絞った中の本数つき。選択中のものは0本でも残す）
+  const cnt = {};
+  for (const v of base) if (v.game) cnt[v.game] = (cnt[v.game] || 0) + 1;
+  if (game && !cnt[game]) cnt[game] = 0;
+  const opts = Object.entries(cnt).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "ja"));
+  const gs = $("#tl-game");
+  gs.innerHTML = `<option value="">すべてのゲーム</option>` + opts.map(([g, n]) => `<option value="${esc(g)}">${esc(g)}（${n}）</option>`).join("");
+  gs.value = game;
+  const vs = game ? base.filter((v) => v.game === game) : base;
   $("#tl-list").innerHTML = S.videos.length ? listByDay(vs.slice(0, shown))
     : `<p class="empty">まだデータがありません。GitHub Actions の「データ更新」が動くと表示されます。</p>`;
   $("#tl-more").hidden = vs.length <= shown;
@@ -395,6 +404,7 @@ async function load() {
 document.addEventListener("DOMContentLoaded", () => {
   chipGroup("#tl-type", (v) => { S.tl.type = v; S.tl.shown = 60; renderTimeline(); });
   $("#tl-ch").addEventListener("change", (e) => { S.tl.ch = e.target.value; S.tl.shown = 60; renderTimeline(); });
+  $("#tl-game").addEventListener("change", (e) => { S.tl.game = e.target.value; S.tl.shown = 60; renderTimeline(); });
   $("#tl-more").addEventListener("click", () => { S.tl.shown += 60; renderTimeline(); });
   chipGroup("#ev-src", (v) => { S.evSrc = v; renderEvents(); });
   $("#cal-prev").addEventListener("click", () => { S.cal.m--; if (S.cal.m < 1) { S.cal.m = 12; S.cal.y--; } renderCalendar(); });
