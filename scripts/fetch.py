@@ -150,6 +150,11 @@ def main():
             videos[vid] = {"id": vid, "ch": "other"}
         save("candidates.json", cands)
 
+    for vid in config.get("guest_videos", []):  # 手で足した動画は次の更新ですぐ載せる
+        if vid not in videos:
+            check.add(vid)
+            videos[vid] = {"id": vid, "ch": "other"}
+
     # 3) 情報を更新する動画を決める（配信中・予定・最近のもの。1日1回は全部）
     today = dt.datetime.utcnow().strftime("%Y-%m-%d")
     if state.get("full_refresh") != today:
