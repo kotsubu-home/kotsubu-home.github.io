@@ -395,7 +395,7 @@ async function load() {
   const get = (f) => fetch(`data/${f}`, { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)).catch(() => null);
   const [videos, channels, meta, xev, yev, mev, nc] = await Promise.all([get("videos.json"), get("channels.json"), get("meta.json"), get("x_events.json"), get("events.json"), get("manual_events.json"), get("noncon.json")]);
   S.videos = dropStale(videos || []); S.mev = mev || []; S.xev = [...S.mev, ...(xev || []), ...(yev || [])]; if (nc) S.nc = nc; S.channels = channels || {}; S.meta = meta || {};
-  if (S.meta.site_name) { $("#site-name").textContent = S.meta.site_name; document.title = `${S.meta.site_name} - 村下小粒さん 非公式 視聴サポート`; }
+  if (S.meta.site_name) { $("#site-name").textContent = S.meta.site_name; document.title = `${S.meta.site_name} - 村下小粒さん 非公式ファンサイト`; }
   $("#updated").textContent = S.meta.updated ? `${fmtDay(S.meta.updated)} ${fmtTime(S.meta.updated)}` : "まだ取得していません";
   $("#tl-ch").innerHTML = `<option value="all">全チャンネル</option>` + Object.entries(S.channels).map(([h, c]) => `<option value="${esc(h)}">${esc(c.label)}</option>`).join("");
   $("#loading").hidden = true;
