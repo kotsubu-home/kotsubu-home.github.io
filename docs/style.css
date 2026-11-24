@@ -107,6 +107,7 @@ input[type=search]:focus, select:focus { outline: 2px solid var(--accent); }
 .badge.xb { color: #1a1a1a; background: #e0b030; border-color: #e0b030; }
 .up-card.x { border-color: #c08a00; }
 .cell .pip.xp { background: repeating-linear-gradient(90deg, var(--c) 0 6px, transparent 6px 9px); }
+[hidden] { display: none !important; }
 .more { display: block; margin: 16px auto; background: var(--surface2); color: var(--ink); border: 2px solid var(--line);
   border-radius: 8px; padding: 10px 30px; font: inherit; cursor: pointer; }
 .empty { color: var(--muted); padding: 24px; text-align: center; }

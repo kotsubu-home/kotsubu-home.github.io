@@ -50,6 +50,9 @@ function xcard(e) {
 }
 const TYPE_LABEL = { archive: "配信", live: "配信中", upcoming: "配信予定", video: "動画", short: "ショート" };
 
+// 予定時刻を6時間以上過ぎても始まっていない「配信予定」（使われなかった配信枠）を外す
+const dropStale = (vs) => vs.filter((v) => v.status !== "upcoming" || !v.start || v.start > Date.now() / 1000 - 6 * 3600);
+
 /* ---------- 動画カード ---------- */
 function card(v) {
   const c = chOf(v);
@@ -111,7 +114,8 @@ function renderTimeline() {
   const vs = S.videos.filter((v) => v.status !== "upcoming" && v.status !== "live")
     .filter((v) => type === "all" || (type === "stream" ? v.status === "archive" : v.status === type))
     .filter((v) => ch === "all" || v.ch === ch);
-  $("#tl-list").innerHTML = listByDay(vs.slice(0, shown));
+  $("#tl-list").innerHTML = S.videos.length ? listByDay(vs.slice(0, shown))
+    : `<p class="empty">まだデータがありません。GitHub Actions の「データ更新」が動くと表示されます。</p>`;
   $("#tl-more").hidden = vs.length <= shown;
 }
 
@@ -362,12 +366,11 @@ function chipGroup(id, fn) {
 async function load() {
   const get = (f) => fetch(`data/${f}`, { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)).catch(() => null);
   const [videos, channels, meta, xev, nc] = await Promise.all([get("videos.json"), get("channels.json"), get("meta.json"), get("x_events.json"), get("noncon.json")]);
-  S.videos = videos || []; S.xev = xev || []; if (nc) S.nc = nc; S.channels = channels || {}; S.meta = meta || {};
+  S.videos = dropStale(videos || []); S.xev = xev || []; if (nc) S.nc = nc; S.channels = channels || {}; S.meta = meta || {};
   if (S.meta.site_name) { $("#site-name").textContent = S.meta.site_name; document.title = `${S.meta.site_name} - 村下小粒さん 非公式 視聴サポート`; }
   $("#updated").textContent = S.meta.updated ? `${fmtDay(S.meta.updated)} ${fmtTime(S.meta.updated)}` : "まだ取得していません";
   $("#tl-ch").innerHTML = `<option value="all">すべてのチャンネル</option>` + Object.entries(S.channels).map(([h, c]) => `<option value="${esc(h)}">${esc(c.label)}</option>`).join("");
   $("#loading").hidden = true;
-  if (!S.videos.length) $("#tl-list").innerHTML = `<p class="empty">まだデータがありません。GitHub Actions の「データ更新」が動くと表示されます。</p>`;
   showTab();
 }
 document.addEventListener("DOMContentLoaded", () => {
@@ -388,7 +391,7 @@ document.addEventListener("DOMContentLoaded", () => {
   setInterval(async () => { // 5分ごとに最新データを読み直す
     const v = await fetch("data/videos.json", { cache: "no-store" }).then((r) => r.json()).catch(() => null);
     const x = await fetch("data/x_events.json", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)).catch(() => null);
-    if (v) S.videos = v;
+    if (v) S.videos = dropStale(v);
     if (x) S.xev = x;
     if (v || x) showTab();
   }, 300000);

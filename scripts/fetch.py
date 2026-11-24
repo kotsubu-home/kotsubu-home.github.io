@@ -50,15 +50,38 @@ def to_unix(s):
     return int(dt.datetime.fromisoformat(s.replace("Z", "+00:00")).timestamp()) if s else None
 
 
-def game_of(title):
-    m = re.search(r"[「『](.+?)[」』]", title)
-    if m:
-        return m.group(1).strip()
-    for m in re.finditer(r"【(.+?)】", title):
-        g = m.group(1).strip()
-        if not re.search(r"配信|LIVE|ライブ|live|告知|ショート|切り抜き|お知らせ|生放送|アーカイブ|コラボ", g):
-            return g
+# ゲーム名ではない言葉（「」や【】に入っていても数えない）。config.json の not_games でも足せる
+NOT_GAME = re.compile(r"配信|LIVE|ライブ|告知|ショート|切り抜き|お知らせ|生放送|アーカイブ|コラボ|生中継|村下小粒|"
+                      r"雑学|雑談|あるある|ラジオ|記念|トーク|やってみた|歌ってみた|レビュー|Vlog|水着|^#|^第.+回$|^[0-9]{4}年", re.I)
+# 番組そのものがゲームのプレイではないもの（基板・レバーの修理など）
+NOT_GAME_TITLE = re.compile(r"超必殺技伝授|歌ってみた")
+
+
+def game_of(title, ignore=()):
+    if NOT_GAME_TITLE.search(title):
+        return None
+    for pat in (r"[「『](.+?)[」』]", r"【(.+?)】"):
+        for m in re.finditer(pat, title):
+            g = m.group(1).strip()
+            if g in ignore or NOT_GAME.search(g):
+                continue
+            g = re.sub(r"^(AC版|アーケード版)|(大会|タイムアタック)$", "", g).strip()
+            if g:
+                return g
     return None
+
+
+def set_games(videos, ignore):
+    """全部の動画のゲーム名を付け直す。ショートは煽り文句が多いので、裏付けのある名前だけ採用する"""
+    known = set()
+    for v in videos:
+        if v.get("status") != "short":
+            v["game"] = game_of(v["title"], ignore)
+            known.add(v["game"])
+    for v in videos:
+        if v.get("status") == "short":
+            g = game_of(v["title"], ignore)
+            v["game"] = g if g and (g in known or "#" + g in v["title"]) else None
 
 
 def main():
@@ -146,7 +169,7 @@ def main():
                 dur = end - start
             rec = {**old, "title": sn["title"], "status": status, "start": start, "end": end, "dur": dur,
                    "views": int(st.get("viewCount", 0) or 0), "likes": int(st.get("likeCount", 0) or 0),
-                   "comments": int(st.get("commentCount", 0) or 0), "game": game_of(sn["title"])}
+                   "comments": int(st.get("commentCount", 0) or 0)}
             # 同接（配信中だけ取れる）
             if status == "live" and ls.get("concurrentViewers"):
                 cv = int(ls["concurrentViewers"])
@@ -165,6 +188,7 @@ def main():
         videos.pop(vid, None)
 
     out = sorted((v for v in videos.values() if v.get("title")), key=lambda v: -(v.get("start") or 0))
+    set_games(out, set(config.get("not_games", [])))
     save("videos.json", out)
     save("channels.json", channels)
     save("state.json", state)
