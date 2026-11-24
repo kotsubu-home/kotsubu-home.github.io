@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """YouTube Data API から配信・動画の情報を集めて docs/data に保存する（GitHub Actions が10分ごとに実行）"""
 import os, re, json, time, datetime as dt, urllib.request, urllib.parse, urllib.error
+import events
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA = os.path.join(ROOT, "docs", "data")
@@ -95,6 +96,9 @@ def main():
     videos = {v["id"]: v for v in load("videos.json", [])}
     state = load("state.json", {"backfilled": [], "full_refresh": ""})
     now = int(time.time())
+    old_events = load("events.json", None)
+    recent = now - (14 if old_events is not None else 60) * 86400  # 初回だけ60日分の概要欄を見る
+    found = []
 
     # 1) チャンネル情報（初回だけ）
     for ch in config["channels"]:
@@ -142,7 +146,7 @@ def main():
         check |= set(videos)
         state["full_refresh"] = today
     for v in videos.values():
-        if v.get("status") in ("live", "upcoming") or (v.get("start") or 0) > now - 14 * 86400:
+        if v.get("status") in ("live", "upcoming") or (v.get("start") or 0) > recent:
             check.add(v["id"])
 
     # 4) 動画の詳しい情報
@@ -185,6 +189,10 @@ def main():
             else:
                 rec.pop("now", None)
             videos[vid] = rec
+            posted = to_unix(sn.get("publishedAt")) or start
+            if status != "short" and posted and posted > now - 60 * 86400:
+                label = channels.get(rec.get("ch"), {}).get("label", "")
+                found.append((vid, label, posted, events.extract(sn.get("description"), posted)))
     # 消された・非公開になった動画を外す
     for vid in [v for v in ids if v not in seen]:
         videos.pop(vid, None)
@@ -192,6 +200,9 @@ def main():
     out = sorted((v for v in videos.values() if v.get("title")), key=lambda v: -(v.get("start") or 0))
     set_games(out, set(config.get("not_games", [])))
     save("videos.json", out)
+    evs = events.merge(old_events or [], found, dt.datetime.now(events.JST).date())
+    save("events.json", evs)
+    print(f"概要欄の予定 {len(evs)} 件")
     save("channels.json", channels)
     save("state.json", state)
     save("meta.json", {"updated": now, "site_name": config.get("site_name", "こつぶホーム")})

@@ -37,13 +37,14 @@ const chOf = (v) => S.channels[v.ch] || { label: v.ch, color: "#888" };
 const XCOLOR = "#c08a00";
 const xDateUnix = (e) => Math.floor(new Date(`${e.date}T${e.time || "00:00"}:00+09:00`).getTime() / 1000);
 const todayKey = () => dayKey(Date.now() / 1000);
+const evLabel = (e) => (e.src === "yt" ? "YouTube告知" : "X告知");
 function xcard(e) {
   const d = new Date(`${e.date}T00:00:00+09:00`);
   return `<a class="vcard" href="${esc(e.url)}" target="_blank" rel="noopener">
     <span class="bar" style="background:${XCOLOR}"></span>
     <span>
       <span class="row1"><span>${e.time || "時間未定"}</span>
-        <span class="badge xb">X告知</span><span class="note">@${esc(e.account)} のポストから自動で拾った予定</span></span>
+        <span class="badge xb">${evLabel(e)}</span><span class="note">${e.src === "yt" ? `${esc(e.account)}の動画の概要欄` : `@${esc(e.account)} のポスト`}から自動で拾った予定</span></span>
       <div class="title">${esc(e.title)}</div>
       <div class="meta"><span>${esc(e.text)}</span></div>
     </span></a>`;
@@ -99,7 +100,7 @@ function renderTimeline() {
   const items = [
     ...xup.map((e) => ({ t: xDateUnix(e), html: `<a class="up-card x" href="${esc(e.url)}" target="_blank" rel="noopener">
       <span class="when">${fmtDay(xDateUnix(e)).replace(/^\d+年/, "")} ${e.time || "時間未定"}</span>
-      <span><span class="badge xb">X告知</span><br>${esc(e.title)}</span></a>` })),
+      <span><span class="badge xb">${evLabel(e)}</span><br>${esc(e.title)}</span></a>` })),
     ...up.map((v) => {
       const left = v.start - now;
       const rel = left > 86400 ? `あと${Math.floor(left / 86400)}日` : left > 3600 ? `あと${Math.floor(left / 3600)}時間` : left > 0 ? `あと${Math.ceil(left / 60)}分` : "まもなく";
@@ -147,7 +148,7 @@ function renderCalendar() {
   $("#cal-grid").innerHTML = html;
   $("#cal-summary").innerHTML = tile("この月の配信", streams, "回") + tile("配信時間", fmtHours(secs), "時間") + tile("動画・配信の合計", cnt, "本");
   $("#cal-legend").innerHTML = Object.values(S.channels).map((c) => `<span style="--c:${esc(c.color)}">${esc(c.label)}</span>`).join("")
-    + `<span style="--c:${XCOLOR}">X告知（点線）</span><span style="--c:#8484a8">短い線＝動画・ショート</span>`;
+    + `<span style="--c:${XCOLOR}">告知（点線）</span><span style="--c:#8484a8">短い線＝動画・ショート</span>`;
   const sel = S.calSel && (byDay[S.calSel] || []);
   const xsel = S.calSel && (xByDay[S.calSel] || []);
   $("#cal-day-title").textContent = S.calSel ? S.calSel.replace(/-0?/g, "/").replace(/^(\d+)\//, "$1年").replace(/\/(\d+)$/, "月$1日") : "日付をえらぶと、その日の配信が出ます";
@@ -365,8 +366,8 @@ function chipGroup(id, fn) {
 /* ---------- 起動 ---------- */
 async function load() {
   const get = (f) => fetch(`data/${f}`, { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)).catch(() => null);
-  const [videos, channels, meta, xev, nc] = await Promise.all([get("videos.json"), get("channels.json"), get("meta.json"), get("x_events.json"), get("noncon.json")]);
-  S.videos = dropStale(videos || []); S.xev = xev || []; if (nc) S.nc = nc; S.channels = channels || {}; S.meta = meta || {};
+  const [videos, channels, meta, xev, yev, nc] = await Promise.all([get("videos.json"), get("channels.json"), get("meta.json"), get("x_events.json"), get("events.json"), get("noncon.json")]);
+  S.videos = dropStale(videos || []); S.xev = [...(xev || []), ...(yev || [])]; if (nc) S.nc = nc; S.channels = channels || {}; S.meta = meta || {};
   if (S.meta.site_name) { $("#site-name").textContent = S.meta.site_name; document.title = `${S.meta.site_name} - 村下小粒さん 非公式 視聴サポート`; }
   $("#updated").textContent = S.meta.updated ? `${fmtDay(S.meta.updated)} ${fmtTime(S.meta.updated)}` : "まだ取得していません";
   $("#tl-ch").innerHTML = `<option value="all">すべてのチャンネル</option>` + Object.entries(S.channels).map(([h, c]) => `<option value="${esc(h)}">${esc(c.label)}</option>`).join("");
@@ -391,8 +392,9 @@ document.addEventListener("DOMContentLoaded", () => {
   setInterval(async () => { // 5分ごとに最新データを読み直す
     const v = await fetch("data/videos.json", { cache: "no-store" }).then((r) => r.json()).catch(() => null);
     const x = await fetch("data/x_events.json", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+    const y = await fetch("data/events.json", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)).catch(() => null);
     if (v) S.videos = dropStale(v);
-    if (x) S.xev = x;
-    if (v || x) showTab();
+    if (x || y) S.xev = [...(x || S.xev.filter((e) => e.src !== "yt")), ...(y || S.xev.filter((e) => e.src === "yt"))];
+    if (v || x || y) showTab();
   }, 300000);
 });

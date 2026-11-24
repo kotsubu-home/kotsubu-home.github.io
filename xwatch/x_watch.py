@@ -202,7 +202,7 @@ def push():
         log("まだ GitHub のリポジトリになっていないので、送るのはスキップしました")
         return
     def git(*a):
-        return subprocess.run(["git", *a], cwd=REPO, capture_output=True, text=True, encoding="utf-8")
+        return subprocess.run(["git", "-c", "user.name=kotsubu-home", "-c", "user.email=kotsubu-home@users.noreply.github.com", *a], cwd=REPO, capture_output=True, text=True, encoding="utf-8")
     git("add", "docs/data/x_events.json")
     if git("diff", "--cached", "--quiet").returncode == 0:
         return
