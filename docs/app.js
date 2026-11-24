@@ -1,7 +1,7 @@
 /* こつぶホーム 画面の動き */
 "use strict";
 
-const S = { videos: [], xev: [], nc: { games: {}, episodes: {} }, channels: {}, meta: {}, tl: { type: "all", ch: "all", shown: 60 },
+const S = { videos: [], xev: [], mev: [], nc: { games: {}, episodes: {} }, channels: {}, meta: {}, tl: { type: "all", ch: "all", shown: 60 },
   cal: null, calSel: null, rk: { metric: "peak", period: "all", type: "stream" }, charts: {} };
 
 const $ = (s, el = document) => el.querySelector(s);
@@ -44,7 +44,7 @@ function xcard(e) {
     <span class="bar" style="background:${XCOLOR}"></span>
     <span>
       <span class="row1"><span>${e.time || "時間未定"}</span>
-        <span class="badge xb">${evLabel(e)}</span><span class="note">${e.src === "yt" ? `${esc(e.account)}の動画の概要欄` : `@${esc(e.account)} のポスト`}から自動で拾った予定</span></span>
+        <span class="badge xb">${evLabel(e)}</span><span class="note">${e.src === "yt" ? `${esc(e.account)}の動画の概要欄` : `@${esc(e.account)} のポスト`}から拾った予定</span></span>
       <div class="title">${esc(e.title)}</div>
       <div class="meta"><span>${esc(e.text)}</span></div>
     </span></a>`;
@@ -384,8 +384,8 @@ function chipGroup(id, fn) {
 /* ---------- 起動 ---------- */
 async function load() {
   const get = (f) => fetch(`data/${f}`, { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)).catch(() => null);
-  const [videos, channels, meta, xev, yev, nc] = await Promise.all([get("videos.json"), get("channels.json"), get("meta.json"), get("x_events.json"), get("events.json"), get("noncon.json")]);
-  S.videos = dropStale(videos || []); S.xev = [...(xev || []), ...(yev || [])]; if (nc) S.nc = nc; S.channels = channels || {}; S.meta = meta || {};
+  const [videos, channels, meta, xev, yev, mev, nc] = await Promise.all([get("videos.json"), get("channels.json"), get("meta.json"), get("x_events.json"), get("events.json"), get("manual_events.json"), get("noncon.json")]);
+  S.videos = dropStale(videos || []); S.mev = mev || []; S.xev = [...S.mev, ...(xev || []), ...(yev || [])]; if (nc) S.nc = nc; S.channels = channels || {}; S.meta = meta || {};
   if (S.meta.site_name) { $("#site-name").textContent = S.meta.site_name; document.title = `${S.meta.site_name} - 村下小粒さん 非公式 視聴サポート`; }
   $("#updated").textContent = S.meta.updated ? `${fmtDay(S.meta.updated)} ${fmtTime(S.meta.updated)}` : "まだ取得していません";
   $("#tl-ch").innerHTML = `<option value="all">すべてのチャンネル</option>` + Object.entries(S.channels).map(([h, c]) => `<option value="${esc(h)}">${esc(c.label)}</option>`).join("");
@@ -413,7 +413,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const x = await fetch("data/x_events.json", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)).catch(() => null);
     const y = await fetch("data/events.json", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)).catch(() => null);
     if (v) S.videos = dropStale(v);
-    if (x || y) S.xev = [...(x || S.xev.filter((e) => e.src !== "yt")), ...(y || S.xev.filter((e) => e.src === "yt"))];
+    if (x || y) S.xev = [...S.mev, ...(x || S.xev.filter((e) => e.src !== "yt" && !S.mev.includes(e))), ...(y || S.xev.filter((e) => e.src === "yt"))];
     if (v || x || y) showTab();
   }, 300000);
 });
