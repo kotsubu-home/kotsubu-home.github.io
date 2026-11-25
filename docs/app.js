@@ -283,7 +283,7 @@ function renderStats() {
 }
 async function drawCurve(id) {
   try {
-    const r = await fetch(`data/viewers/${encodeURIComponent(id)}.json`, { cache: "no-store" });
+    const r = await fresh(`data/viewers/${encodeURIComponent(id)}.json`);
     const pts = await r.json();
     const v = S.videos.find((x) => x.id === id);
     const t0 = v && v.start ? v.start : pts[0][0];
@@ -391,15 +391,44 @@ function chipGroup(id, fn) {
 }
 
 /* ---------- 起動 ---------- */
-async function load() {
-  const get = (f) => fetch(`data/${f}`, { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)).catch(() => null);
-  const [videos, channels, meta, xev, yev, mev, nc] = await Promise.all([get("videos.json"), get("channels.json"), get("meta.json"), get("x_events.json"), get("events.json"), get("manual_events.json"), get("noncon.json")]);
-  S.videos = dropStale(videos || []); S.mev = mev || []; S.xev = [...S.mev, ...(xev || []), ...(yev || [])]; if (nc) S.nc = nc; S.channels = channels || {}; S.meta = meta || {};
+// 置き場所（CDN）とブラウザの古い控えを使わないように、1分ごとに変わる目印をつけて読む
+const fresh = (url) => fetch(`${url}?t=${Math.floor(Date.now() / 60000)}`, { cache: "no-store" });
+const RAW = {};
+let loadedAt = 0, loading = null;
+function load() { return (loading ||= loadData().finally(() => { loading = null; })); }
+async function loadData() {
+  // 読めなかったファイルは前の内容を使う。1つも変わっていなければ描き直さない
+  const names = ["videos", "channels", "meta", "x_events", "events", "manual_events", "noncon"];
+  const got = await Promise.all(names.map(async (n) => {
+    try { const r = await fresh(`data/${n}.json`); return r.ok ? [n, JSON.stringify(await r.json())] : null; } catch { return null; }
+  }));
+  let changed = !loadedAt;
+  for (const g of got) if (g && RAW[g[0]] !== g[1]) { RAW[g[0]] = g[1]; changed = changed || g[0] !== "meta"; }
+  const get = (n, d) => (RAW[n] ? JSON.parse(RAW[n]) : d);
+  S.meta = get("meta", {});
   if (S.meta.site_name) { $("#site-name").textContent = S.meta.site_name; document.title = `${S.meta.site_name} - 村下小粒さん 非公式ファンサイト`; }
   $("#updated").textContent = S.meta.updated ? `${fmtDay(S.meta.updated)} ${fmtTime(S.meta.updated)}` : "まだ取得していません";
-  $("#tl-ch").innerHTML = `<option value="all">全チャンネル</option>` + Object.entries(S.channels).map(([h, c]) => `<option value="${esc(h)}">${esc(c.label)}</option>`).join("");
+  loadedAt = Date.now();
+  if (!changed) return;
+  S.videos = dropStale(get("videos", [])); S.mev = get("manual_events", []);
+  S.xev = [...S.mev, ...get("x_events", []), ...get("events", [])];
+  S.nc = get("noncon", S.nc); S.channels = get("channels", {});
+  const sel = $("#tl-ch");
+  sel.innerHTML = `<option value="all">全チャンネル</option>` + Object.entries(S.channels).map(([h, c]) => `<option value="${esc(h)}">${esc(c.label)}</option>`).join("");
+  sel.value = S.tl.ch;
   $("#loading").hidden = true;
   showTab();
+}
+// 開いているページが古い版なら、1回だけ読み込み直す
+async function checkVersion() {
+  try {
+    const mine = (document.querySelector('script[src*="app.js"]').src.match(/v=(\w+)/) || [])[1];
+    const r = await fresh("index.html");
+    const now = r.ok && ((await r.text()).match(/app\.js\?v=(\w+)/) || [])[1];
+    if (!mine || !now || mine === now || sessionStorage.getItem("ver") === now) return;
+    sessionStorage.setItem("ver", now);
+    location.reload();
+  } catch { /* 読めないときはそのまま使う */ }
 }
 document.addEventListener("DOMContentLoaded", () => {
   chipGroup("#tl-type", (v) => { S.tl.type = v; S.tl.shown = 60; renderTimeline(); });
@@ -418,12 +447,9 @@ document.addEventListener("DOMContentLoaded", () => {
   $("#st-stream").addEventListener("change", (e) => drawCurve(e.target.value));
   window.addEventListener("hashchange", () => { showTab(); window.scrollTo({ top: 0, behavior: "instant" }); });
   load();
-  setInterval(async () => { // 5分ごとに最新データを読み直す
-    const v = await fetch("data/videos.json", { cache: "no-store" }).then((r) => r.json()).catch(() => null);
-    const x = await fetch("data/x_events.json", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)).catch(() => null);
-    const y = await fetch("data/events.json", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)).catch(() => null);
-    if (v) S.videos = dropStale(v);
-    if (x || y) S.xev = [...S.mev, ...(x || S.xev.filter((e) => e.src !== "yt" && !S.mev.includes(e))), ...(y || S.xev.filter((e) => e.src === "yt"))];
-    if (v || x || y) showTab();
-  }, 300000);
+  checkVersion();
+  setInterval(() => { if (!document.hidden) load(); }, 120000); // 2分ごと
+  const back = () => { if (!document.hidden && Date.now() - loadedAt > 30000) { load(); checkVersion(); } }; // ほかのタブやアプリから戻ったとき
+  document.addEventListener("visibilitychange", back);
+  window.addEventListener("pageshow", back);
 });
