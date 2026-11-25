@@ -125,8 +125,8 @@ input[type=search]:focus, select:focus { outline: 2px solid var(--accent); }
   padding: 4px 5px; cursor: pointer; text-align: left; color: var(--ink); font: inherit; display: flex; flex-direction: column; gap: 3px;
 }
 .cell.blank { background: transparent; border-color: transparent; cursor: default; }
-.cell.today { border-color: var(--accent); }
-.cell.sel { outline: 3px solid var(--accent); }
+.cell.today { border-color: var(--accent); } .cell.today .d { color: var(--accent); font-weight: 700; }
+.cell.sel { outline: 3px solid #4fe3e8; }
 .cell .d { font-size: 12px; color: var(--ink2); }
 .cell .pips { display: flex; flex-wrap: wrap; gap: 3px; }
 .cell .pip { width: 10px; height: 10px; border-radius: 3px; background: var(--c); }
