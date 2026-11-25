@@ -390,6 +390,33 @@ function chipGroup(id, fn) {
   });
 }
 
+/* ---------- アクセス計測（Googleアナリティクス） ---------- */
+const GA = "G-EVF4GRNC0Z";
+let gaOn = false;
+const gaOff = () => { try { return localStorage.getItem("no-ga") === "1"; } catch { return false; } };
+function gtag() { window.dataLayer.push(arguments); }
+function startGa() {
+  window["ga-disable-" + GA] = gaOff();
+  if (gaOn || gaOff() || location.hostname !== "kotsubu-home.github.io") return; // 手元での確認は数えない
+  gaOn = true;
+  window.dataLayer = window.dataLayer || [];
+  gtag("js", new Date());
+  gtag("config", GA, { allow_google_signals: false, allow_ad_personalization_signals: false });
+  const s = document.createElement("script");
+  s.async = true; s.src = "https://www.googletagmanager.com/gtag/js?id=" + GA;
+  document.head.append(s);
+}
+const gaTab = () => { if (gaOn && !gaOff()) gtag("event", "tab_view", { tab: document.querySelector(".tabs a.on")?.dataset.tab }); };
+function gaSetup() {
+  const b = $("#ga-toggle");
+  const label = () => { b.textContent = gaOff() ? "このブラウザは計測していません（計測を許可する）" : "このブラウザの計測を止める"; };
+  b.addEventListener("click", () => {
+    try { gaOff() ? localStorage.removeItem("no-ga") : localStorage.setItem("no-ga", "1"); } catch { return; }
+    startGa(); label();
+  });
+  label(); startGa();
+}
+
 /* ---------- 起動 ---------- */
 // 置き場所（CDN）とブラウザの古い控えを使わないように、1分ごとに変わる目印をつけて読む
 const fresh = (url) => fetch(`${url}?t=${Math.floor(Date.now() / 60000)}`, { cache: "no-store" });
@@ -445,8 +472,9 @@ document.addEventListener("DOMContentLoaded", () => {
   $("#rk-period").addEventListener("change", (e) => { S.rk.period = e.target.value; renderRanking(); });
   $("#rk-type").addEventListener("change", (e) => { S.rk.type = e.target.value; renderRanking(); });
   $("#st-stream").addEventListener("change", (e) => drawCurve(e.target.value));
-  window.addEventListener("hashchange", () => { showTab(); window.scrollTo({ top: 0, behavior: "instant" }); });
+  window.addEventListener("hashchange", () => { showTab(); gaTab(); window.scrollTo({ top: 0, behavior: "instant" }); });
   load();
+  gaSetup();
   checkVersion();
   setInterval(() => { if (!document.hidden) load(); }, 120000); // 2分ごと
   const back = () => { if (!document.hidden && Date.now() - loadedAt > 30000) { load(); checkVersion(); } }; // ほかのタブやアプリから戻ったとき

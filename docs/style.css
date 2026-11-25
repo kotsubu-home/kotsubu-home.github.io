@@ -166,6 +166,7 @@ input[type=search]:focus, select:focus { outline: 2px solid var(--accent); }
 
 footer { max-width: 960px; margin: 30px auto 0; padding: 18px 16px 40px; color: var(--muted); font-size: 12.5px; border-top: 2px solid var(--line); }
 footer strong { color: var(--ink2); }
+#ga-toggle { background: none; border: 0; padding: 6px 0; font: inherit; color: var(--ink2); text-decoration: underline; cursor: pointer; }
 
 @media (max-width: 600px) {
   .brand h1 { font-size: 24px; }
