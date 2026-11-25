@@ -400,6 +400,7 @@ function startGa() {
   if (gaOn || gaOff() || location.hostname !== "kotsubu-home.github.io") return; // 手元での確認は数えない
   gaOn = true;
   window.dataLayer = window.dataLayer || [];
+  gtag("consent", "default", { ad_storage: "denied", ad_user_data: "denied", ad_personalization: "denied", analytics_storage: "granted" }); // 広告には使わない
   gtag("js", new Date());
   gtag("config", GA, { allow_google_signals: false, allow_ad_personalization_signals: false });
   const s = document.createElement("script");
